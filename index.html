@@ -1,180 +1,99 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRptS_W14B2Yef4pVn_t8JDIrcpWl5Ml7ayyQ&s" type="image/x-icon"/>
-    <title>PomoCut</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(to right, #ff7e5f, #feb47b); /* Aesthetic gradient background */
-            color: #fff;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-image: https://assets.onecompiler.app/42r4eaqzv/42tzy6zqu/2,%20jie%20ma.jpeg;
-        }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        p {
-            font-size: 2rem;
-            margin: 10px 0;
-        }
-        button {
-            font-size: 1.2rem;
-            padding: 10px 20px;
-            margin-top: 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-        button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-        #settings {
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-        input {
-            width: 60px;
-            text-align: center;
-            border-radius: 5px;
-            border: none;
-            padding: 5px;
-            margin: 5px;
-            font-size: 1rem;
-        }
-        input:focus {
-            outline: none;
-            border: 2px solid #feb47b;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>verify you are a human</title>
+<style>
+  body { 
+    font-family: Arial; 
+    text-align: center; 
+    margin-top: 50px; 
+    background: #f0f0f0; 
+  }
+  #captchaText { 
+    font-size: 24px; 
+    margin-bottom: 20px; 
+    font-weight: bold; 
+  }
+  #buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 100px);
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .color-btn { 
+    width: 100px; 
+    height: 100px; 
+    border: none; 
+    cursor: pointer; 
+    border-radius: 50%; 
+    transition: transform 0.2s; 
+  }
+  .color-btn:hover { transform: scale(1.1); }
+  #progress { margin-top: 10px; font-size: 18px; }
+  #timer { font-size: 20px; color: #ff0000; margin-bottom: 20px; }
+</style>
 </head>
 <body>
-    <h1>Pomodoro Timer</h1>
-    <p id="sessionType">Work Session</p>
-    <p id="timer">25:00</p>
-    <button id="startBtn">Start</button>
-    <button id="resetBtn">Reset</button>
 
-    <div id="settings">
-        <h2>Settings</h2>
-        <label for="workDuration">Work (min):</label>
-        <input type="number" id="workDuration" value="25" min="1" />&nbsp;
-        <label for="shortBreakDuration">Short Break (min):</label>
-        <input type="number" id="shortBreakDuration" value="5" min="1" />&nbsp;
-        <label for="longBreakDuration">Long Break (min):</label>
-        <input type="number" id="longBreakDuration" value="15" min="1" />&nbsp;
-        <label for="breakInterval">Cycles for Long Break:</label>
-        <input type="number" id="breakInterval" value="4" min="1" />&nbsp;
-        <button id="saveSettings">Save</button>
-    </div>
+<h2 id="captchaText"></h2>
+<div id="timer">Time left: 10s</div>
+<div id="buttons"></div>
+<div id="progress">Progress: 0 / 5</div>
 
-    <script>
-        let timerDisplay = document.getElementById('timer');
-        let sessionTypeDisplay = document.getElementById('sessionType');
-        let startBtn = document.getElementById('startBtn');
-        let resetBtn = document.getElementById('resetBtn');
+<script>
+const colors = ['red','green','blue','yellow','orange','purple','pink','cyan','lime','brown'];
+let sequence = [], progress = 0;
+let timeLeft = 10;
 
-        // Default time values in seconds
-        let workTime = 25 * 60; // 25 minutes
-        let shortBreakTime = 5 * 60; // 5 minutes
-        let longBreakTime = 15 * 60; // 15 minutes
-        let breakInterval = 4; // Number of work cycles before a long break
-        let currentTime = workTime;
-        let cycles = 0;
-        let timer;
-        let isRunning = false;
-        let session = 'work'; // 'work', 'shortBreak', or 'longBreak'
+// Generate 5-color sequence
+for(let i=0;i<5;i++){
+    sequence.push(colors[Math.floor(Math.random()*colors.length)]);
+}
 
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${minutes}:${secs < 10 ? '0' + secs : secs}`;
+function shuffle(array){ return array.sort(()=>Math.random()-0.5); }
+
+function showNext(){
+    if(progress >= sequence.length){
+        clearInterval(timerId);
+        window.location.href = 'https://example.com'; // Navigate on success
+    } else {
+        document.getElementById('captchaText').innerText = 'Click: ' + sequence[progress].toUpperCase();
+        let btns = shuffle([...colors]);
+        document.getElementById('buttons').innerHTML = btns.map(c=>`<button class="color-btn" style="background:${c}" onclick="check('${c}')"></button>`).join('');
+        document.getElementById('progress').innerText = `Progress: ${progress} / 5`;
+    }
+}
+
+function check(color){
+    if(color === sequence[progress]){
+        progress++;
+        showNext();
+    } else {
+        clearInterval(timerId);
+        alert('Wrong color! ❌ Restarting...');
+        location.reload();
+    }
+}
+
+// Single 10-second timer for entire CAPTCHA
+function startTimer(){
+    timerId = setInterval(()=>{
+        timeLeft--;
+        document.getElementById('timer').innerText = `Time left: ${timeLeft}s`;
+        if(timeLeft <= 0){
+            clearInterval(timerId);
+            alert('Time up! ⏰ Restarting...');
+            location.reload();
         }
+    },1000);
+}
 
-        function startTimer(duration, onComplete) {
-            currentTime = duration;
-            timer = setInterval(() => {
-                timerDisplay.textContent = formatTime(currentTime);
-                currentTime--;
+showNext();
+startTimer();
+</script>
 
-                if (currentTime < 0) {
-                    clearInterval(timer);
-                    onComplete(); // Call the function to switch between sessions
-                }
-            }, 1000);
-        }
-
-        function handleSessionEnd() {
-            if (session === 'work') {
-                cycles++;
-                if (cycles % breakInterval === 0) {
-                    // Long break after specified cycles
-                    sessionTypeDisplay.textContent = 'Long Break';
-                    session = 'longBreak';
-                    startTimer(longBreakTime, handleSessionEnd);
-                } else {
-                    // Short break after other work sessions
-                    sessionTypeDisplay.textContent = 'Short Break';
-                    session = 'shortBreak';
-                    startTimer(shortBreakTime, handleSessionEnd);
-                }
-            } else {
-                // Start a new work session after any break
-                sessionTypeDisplay.textContent = 'Work Session';
-                session = 'work';
-                startTimer(workTime, handleSessionEnd);
-            }
-        }
-
-        function startPomodoro() {
-            if (isRunning) return;
-            isRunning = true;
-            startBtn.disabled = true;
-            sessionTypeDisplay.textContent = 'Work Session';
-            startTimer(workTime, handleSessionEnd);
-        }
-
-        function resetPomodoro() {
-            clearInterval(timer);
-            isRunning = false;
-            startBtn.disabled = false;
-            currentTime = workTime;
-            sessionTypeDisplay.textContent = 'Work Session';
-            timerDisplay.textContent = formatTime(workTime);
-            cycles = 0;
-            session = 'work';
-        }
-
-        function saveSettings() {
-            // Get values from input fields
-            workTime = document.getElementById('workDuration').value * 60; // Convert minutes to seconds
-            shortBreakTime = document.getElementById('shortBreakDuration').value * 60;
-            longBreakTime = document.getElementById('longBreakDuration').value * 60;
-            breakInterval = document.getElementById('breakInterval').value; // Get break interval
-
-            // Reset the timer display after saving
-            timerDisplay.textContent = formatTime(workTime);
-        }
-
-        startBtn.addEventListener('click', startPomodoro);
-        resetBtn.addEventListener('click', resetPomodoro);
-        document.getElementById('saveSettings').addEventListener('click', saveSettings);
-    </script>
 </body>
 </html>
