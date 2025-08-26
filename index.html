@@ -58,7 +58,7 @@ function shuffle(array){ return array.sort(()=>Math.random()-0.5); }
 function showNext(){
     if(progress >= sequence.length){
         clearInterval(timerId);
-        window.location.href = 'https://example.com'; // Navigate on success
+        window.location.href = '/main.html'; // Navigate on success
     } else {
         document.getElementById('captchaText').innerText = 'Click: ' + sequence[progress].toUpperCase();
         let btns = shuffle([...colors]);
